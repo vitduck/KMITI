@@ -1,41 +1,49 @@
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <sys/time.h>
 
-#define SEED 1337
-#define SIZE 4000
+#define SEED 1234
+#define min(x,y) (((x) < (y)) ? (x) : (y))
 
 double random_number(); 
-void   random_matrix(double *matrix, int row, int col); 
-void   zero_matrix(double *matrix, int row, int col); 
-void   print_matrix(double *matrix, int row , int col, const char *name); 
-void   mat_mul(double *A, double *B, double *C, int row_A, int col_A, int row_B, int col_B); 
 
-int main() { 
-    struct timeval t1, t2; 
+void  random_matrix(double*, int, int); 
+void  zero_matrix(double*, int, int) ; 
+void  print_matrix(double*, int , int, const char*); 
+void  mat_mul(double*, double*, double*, int, int, int); 
+
+int main(int argc, char **argv) { 
+    int    m, n, p; 
     double elapsed_time; 
+    struct timeval t1, t2; 
 
-    int row_A = SIZE, col_A = SIZE; 
-    int row_B = SIZE, col_B = SIZE; 
+    // matrix size 
+    if (argc != 4) {
+        m = 4; n = 4; p = 4; 
+    } else {  
+        m = atoi(argv[1]); n = atoi(argv[2]); p = atoi(argv[3]); 
+    } 
 
-    assert(col_A == row_B); 
-
-    double* A = (double*) malloc(sizeof(double) * row_A * col_A); 
-    double* B = (double*) malloc(sizeof(double) * row_B * col_B); 
-    double* C = (double*) malloc(sizeof(double) * row_A * col_B); 
+    // allocation
+    double* A = (double*) malloc(sizeof(double) * m * p); 
+    double* B = (double*) malloc(sizeof(double) * p * n); 
+    double* C = (double*) malloc(sizeof(double) * m * n); 
 
     //initialize A, B 
     srand(SEED); 
-    random_matrix(A, row_A, col_A); 
-    random_matrix(B, row_B, col_B); 
+    random_matrix(A, m, p); 
+    random_matrix(B, p, n); 
 
     //initialize C
-    zero_matrix(C, row_A, col_B); 
+    zero_matrix(C, m, n); 
 
+    // start timing 
     gettimeofday(&t1, NULL);
-    mat_mul(A, B, C, row_A, col_A, row_B, col_B); 
+
+    // C = A * B 
+    mat_mul(A, B, C, m, n, p); 
+
+    // end timing 
     gettimeofday(&t2, NULL);
 
     // walltime 
@@ -43,14 +51,15 @@ int main() {
     printf("Timing: %10.3f (s)\n", elapsed_time); 
 
     // gflops 
-    double gflops = (2.0*row_A*col_B*col_A + 1.0*row_A*col_B)*1E-9; 
+    double gflops = (2.0*m*n*p - 1.0*m*p)*1E-9; 
     printf("Performance: %10.3f (GFlops)\n", gflops/elapsed_time);
    
     // debug
-    /* print_matrix(A, row_A, col_A, "A =");  */
-    /* print_matrix(B, row_B, col_B, "B =");  */
-    /* print_matrix(C, row_A, col_B, "C =");  */
-
+    print_matrix(A, m, p, "A ="); 
+    print_matrix(B, p, n, "B ="); 
+    print_matrix(C, m, n, "C ="); 
+    
+    //deallocate 
     free(A); 
     free(B); 
     free(C); 
@@ -58,36 +67,33 @@ int main() {
     return 0;
 }
 
-void random_matrix(double *matrix, int row, int col) { 
-    for (int i = 0; i < row; i++)
-        for (int j = 0; j < col; j++)
-            matrix[i * col + j] = random_number();
+void random_matrix(double *matrix, int m, int n) { 
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            matrix[i*n + j] = random_number();
 } 
 
-void zero_matrix(double *matrix, int row, int col ) { 
-    for (int i = 0; i < row; i++)
-        for (int j = 0; j < col; j++)
-            matrix[i * col + j] = 0.0; 
+void zero_matrix(double *matrix, int m, int n ) { 
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            matrix[i*n + j] = 0.0; 
 } 
 
-void print_matrix(double *matrix, int row , int col, const char *name ) { 
+void mat_mul(double *A, double *B, double *C, int m, int n, int p) { 
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)  
+            for (int k = 0; k < p; k++) 
+                C[i*n+j] += A[i*p+k] * B[k*n+j]; 
+} 
+
+void print_matrix(double *matrix, int m , int n, const char *name ) { 
     printf("%s\n", name); 
-    
-    for (int i = 0; i < row*col; i++) { 
-        if (i > 0 && i % col == 0) { 
-            printf("\n"); 
+    for (int i=0; i<min(m,4); i++) {
+        for (int j=0; j<min(n,4); j++) {
+            printf ("%12.5f", matrix[i*n+j]);
         }
-        printf("%12.5f", matrix[i]); 
+        printf ("\n");
     }
-
-    printf("\n"); 
-} 
-
-void mat_mul(double *A, double *B, double *C, int row_A, int col_A, int row_B, int col_B) { 
-    for (int i = 0; i < row_A; i++)
-        for (int j = 0; j < col_B; j++)  
-            for (int k = 0; k < col_A; k++) 
-                C[i * col_B +j] += A[i * col_A + k] * B[k * col_B + j]; 
 } 
 
 double random_number() { 
