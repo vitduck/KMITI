@@ -33,7 +33,7 @@ gen9:
 
 gen12: 
 	rm -rf ./gen12
-	advisor-python $(APM)/run_oa.py gen12 --config gen12_dg1 --collect full --no-assume-dependencies -- ./matmul.x 2000 2000 2000
+	advisor-python $(APM)/run_oa.py gen12 --config gen12_dg1 --collect basic --no-assume-dependencies -- ./matmul.x 2000 2000 2000
 
 clean: 
 	rm -f *.x *.optrpt

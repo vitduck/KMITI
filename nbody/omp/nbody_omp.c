@@ -56,14 +56,14 @@ int main() {
    
     int t, i, j; 
     for (t = 1; t <= T; t += DT) {
-        double dx, dy, dz; 
-        double dvx, dvy, dvz; 
-        double ax, ay, az; 
-        double d2, d32;  
-        double F; 
-
         #pragma omp parallel for private(j)
         for (i = 0; i < N; i++) { 
+            double dx, dy, dz; 
+            double dvx, dvy, dvz; 
+            double ax, ay, az; 
+            double d2, d32;  
+            double F; 
+
             // force initialization 
             fx[i] = 0.0;  
             fy[i] = 0.0;  
