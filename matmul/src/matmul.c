@@ -5,16 +5,16 @@
 #define SEED 1234
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 
-double random_number(); 
+float random_number(); 
 
-void  random_matrix(double*, int, int); 
-void  zero_matrix(double*, int, int) ; 
-void  print_matrix(double*, int , int, const char*); 
-void  mat_mul(double*, double*, double*, int, int, int); 
+void random_matrix(float*, int, int); 
+void zero_matrix(float*, int, int) ; 
+void print_matrix(float*, int , int, const char*); 
+void mat_mul(float*, float*, float*, int, int, int); 
 
 int main(int argc, char **argv) { 
     int    m, n, p; 
-    double elapsed_time; 
+    double elapsed_time, gflops; 
     struct timeval t1, t2; 
 
     // matrix size 
@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
     } 
 
     // allocation
-    double* A = (double*) malloc(sizeof(double) * m * p); 
-    double* B = (double*) malloc(sizeof(double) * p * n); 
-    double* C = (double*) malloc(sizeof(double) * m * n); 
+    float* A = (float*) malloc(sizeof(float) * m * p); 
+    float* B = (float*) malloc(sizeof(float) * p * n); 
+    float* C = (float*) malloc(sizeof(float) * m * n); 
 
     //initialize A, B 
     srand(SEED); 
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     printf("Timing: %10.3f (s)\n", elapsed_time); 
 
     // gflops 
-    double gflops = (2.0*m*n*p - 1.0*m*p)*1E-9; 
+    gflops = (2.0*m*n*p - 1.0*m*p)*1E-9; 
     printf("Performance: %10.3f (GFlops)\n", gflops/elapsed_time);
    
     // debug
@@ -67,26 +67,26 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void random_matrix(double *matrix, int m, int n) { 
+void random_matrix(float *matrix, int m, int n) { 
     for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)
             matrix[i*n + j] = random_number();
 } 
 
-void zero_matrix(double *matrix, int m, int n ) { 
+void zero_matrix(float *matrix, int m, int n ) { 
     for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)
             matrix[i*n + j] = 0.0; 
 } 
 
-void mat_mul(double *A, double *B, double *C, int m, int n, int p) { 
+void mat_mul(float* A, float* B, float* C, int m, int n, int p) { 
     for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)  
             for (int k = 0; k < p; k++) 
                 C[i*n+j] += A[i*p+k] * B[k*n+j]; 
 } 
 
-void print_matrix(double *matrix, int m , int n, const char *name ) { 
+void print_matrix(float *matrix, int m , int n, const char *name ) { 
     printf("%s\n", name); 
     for (int i=0; i<min(m,4); i++) {
         for (int j=0; j<min(n,4); j++) {
@@ -96,6 +96,6 @@ void print_matrix(double *matrix, int m , int n, const char *name ) {
     }
 } 
 
-double random_number() { 
-    return ((double)rand() / (double)RAND_MAX);   
+float random_number() { 
+    return ((float)rand() / (float)RAND_MAX);   
 } 
