@@ -7,16 +7,22 @@
 #define SEED 1234
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 
-double random_number(); 
+#if defined DOUBLE
+    typedef double PREC;
+#else
+    typedef float PREC;
+#endif
 
-void  random_matrix(double*, int, int); 
-void  zero_matrix(double*, int, int) ; 
-void  print_matrix(double*, int , int, const char*); 
+PREC random_number(); 
+
+void  random_matrix(PREC*, int, int); 
+void  zero_matrix(PREC*, int, int) ; 
+void  print_matrix(PREC*, int , int, const char*); 
 
 int main(int argc, char **argv) { 
     int    m, n, p; 
     struct timeval t1, t2; 
-    double elapsed_time; 
+    PREC elapsed_time; 
 
     // matrix size 
     if (argc != 4) {
@@ -26,12 +32,12 @@ int main(int argc, char **argv) {
     } 
 
     // scaling factors
-    double alpha = 1.0, beta = 0.0; 
+    PREC alpha = 1.0, beta = 0.0; 
     
     // allocation 
-    double* A = (double*) malloc(sizeof(double) * m * p);
-    double* B = (double*) malloc(sizeof(double) * p * n);
-    double* C = (double*) malloc(sizeof(double) * m * n);
+    PREC* A = (PREC*) malloc(sizeof(PREC) * m * p);
+    PREC* B = (PREC*) malloc(sizeof(PREC) * p * n);
+    PREC* C = (PREC*) malloc(sizeof(PREC) * m * n);
 
     // initialize C 
     zero_matrix(C, m, n); 
@@ -47,7 +53,11 @@ int main(int argc, char **argv) {
 
     // blas3 
     /* dgemm("N", "N", &m, &n, &p, &alpha, A, &p, B, &n, &beta, C, &n); */
+#if defined DOUBLE_PREC
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, p, alpha, A, p, B, n, beta, C, n);
+#else
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, p, alpha, A, p, B, n, beta, C, n);
+#endif
 
     // end timing 
     gettimeofday(&t2, NULL);
@@ -57,7 +67,7 @@ int main(int argc, char **argv) {
     printf("Timing: %10.3f (s)\n", elapsed_time); 
 
     // gflops
-    double gflops = (2.0*m*n*p - 1.0*m*p)*1E-9;
+    PREC gflops = (2.0*m*n*p - 1.0*m*p)*1E-9;
     printf("Performance: %10.3f (GFlops)\n", gflops/elapsed_time);
     
     // debug
@@ -72,19 +82,19 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void random_matrix(double *matrix, int m, int n) { 
+void random_matrix(PREC *matrix, int m, int n) { 
     for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)
             matrix[i*n + j] = random_number();
 } 
 
-void zero_matrix(double *matrix, int m, int n ) { 
+void zero_matrix(PREC *matrix, int m, int n ) { 
     for (int i = 0; i < m; i++)
         for (int j = 0; j < n; j++)
             matrix[i*n + j] = 0.0; 
 } 
 
-void print_matrix(double *matrix, int m , int n, const char *name ) { 
+void print_matrix(PREC *matrix, int m , int n, const char *name ) { 
     printf("%s\n", name); 
     for (int i=0; i<min(m,4); i++) {
         for (int j=0; j<min(n,4); j++) {
@@ -94,6 +104,6 @@ void print_matrix(double *matrix, int m , int n, const char *name ) {
     }
 } 
 
-double random_number() { 
-    return ((double)rand() / (double)RAND_MAX);   
+PREC random_number() { 
+    return ((PREC)rand() / (PREC)RAND_MAX);   
 } 

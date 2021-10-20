@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
+#include <omp.h>
 
 #define SEED 1234
 
@@ -61,6 +62,7 @@ int main() {
         double d2, d32;  
         double F; 
 
+        #pragma omp parallel for private(j)
         for (i = 0; i < N; i++) { 
             // force initialization 
             fx[i] = 0.0;  
